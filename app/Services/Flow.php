@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\UserCheckpoint;
 use App\Services\Operation;
 
 class Flow
 {
-    private $flow = [];
+    protected $flow = [];
     private $name;
 
     public function __construct(String $name, array $flow)
@@ -79,33 +80,44 @@ class Flow
         }
     }
 
-    public function getNextState(string $currentStateName, array $arguments): array
+    public function getNextState(array $arguments, bool $saveCheckpoint = true): array
     {
         $next = '';
         $response = '';
-        $currentStateIndex = $this->isExist($currentStateName);
-        if($currentStateIndex < 0) { abort(404); }
+        $userCheckpoint = UserCheckpoint::where('user_id',$arguments['user_id'])->first();
+        if( ! empty($userCheckpoint->checkpoint)) {
+            $currentStateName = $userCheckpoint->checkpoint;
+            $currentStateName = substr($currentStateName, strpos($currentStateName, '/') + 1);
 
-        if (isset(array_keys($this->flow)[$currentStateIndex + 1])) {
-            $next = array_keys($this->flow)[$currentStateIndex + 1];
-        }
-        else {
-            abort(404);
-        }
+            $currentStateIndex = $this->isExist($currentStateName);
+            if ($currentStateIndex < 0) {
+                abort(404);
+            }
 
-        if( ! $this->flow[$currentStateName] == null) {
-            foreach($this->flow[$currentStateName] as $operation) {
-                $response = $operation->getNextState($arguments);
-                if ( ! empty($response['error'])) {
-                    return ['next' => '', 'error' => $response['error']];
-                }
-                elseif ( ! empty($response['next'])) {
-                    $next = $response['next'];
-                    break;
+            if (isset(array_keys($this->flow)[$currentStateIndex + 1])) {
+                $next = array_keys($this->flow)[$currentStateIndex + 1];
+            } else {
+                abort(404);
+            }
+
+            if (!$this->flow[$currentStateName] == null) {
+                foreach ($this->flow[$currentStateName] as $operation) {
+                    $response = $operation->getNextState($arguments);
+                    if (!empty($response['error'])) {
+                        return ['next' => '', 'error' => $response['error']];
+                    } elseif (!empty($response['next'])) {
+                        $next = $response['next'];
+                        break;
+                    }
                 }
             }
         }
+        else {
+            $next = array_keys($this->flow)[0];
+        }
 
+        $next = $this->name . "/" . $next;
+        if($next and $saveCheckpoint) { UserCheckpoint::updateOrCreate(['user_id'=>$arguments['user_id']],['checkpoint'=>$next]); }
         return ['next' => $next, 'error' => ''];
     }
 
