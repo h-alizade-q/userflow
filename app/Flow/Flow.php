@@ -42,12 +42,10 @@ class Flow
 
     public static function getNextState(array $arguments, bool $saveCheckpoint = true): array
     {
-        $next = '';
+        $checkpoint = $next = '';
         $userCheckpoint = UserCheckpoint::where('user_id', $arguments['user_id'])->first();
         if (empty($userCheckpoint->checkpoint)) {
-            $currentFlowName = self::$mainFlowName;  // don't set yet!
-            dd($currentFlowName);
-//            $checkpoint = array_keys(self::$flow)[0];     incorrect: there is not any state in flow
+            $currentFlowName = self::$mainFlowName;
         } else {
             $checkpoint = $userCheckpoint->checkpoint;
             [$currentFlowName, $currentState] = self::separateCheckpoint($checkpoint);
@@ -58,8 +56,7 @@ class Flow
         self::$flow = call_user_func(array($flowObj,'getFlow'));
 
         $currentStateIndex = self::isExist($checkpoint);
-
-        if ($currentStateIndex < 0) {
+        if ($checkpoint and $currentStateIndex < 0) {
             abort(404);
         }
 
@@ -69,7 +66,7 @@ class Flow
             abort(404);
         }
 
-        if ( ! self::$flow[$checkpoint] == null) {
+        if ($checkpoint and self::$flow[$checkpoint] != null) {
             foreach (self::$flow[$checkpoint] as $operation) {
                 $response = $operation->getNextState($arguments);
                 if ( ! empty($response['error'])) {

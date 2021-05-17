@@ -2,9 +2,7 @@
 
 namespace App\Flow;
 
-use App\Operations\CheckCardPaymentStatus;
 use App\Operations\CheckDietPermission;
-use App\Operations\CheckPaymentType;
 use App\Operations\CheckSicknessStatus;
 
 class regFlow extends generalFlowClass
@@ -26,13 +24,15 @@ class regFlow extends generalFlowClass
                 $checkDietPermission,
                 $checkSicknessStatus,
             ],
+            '/asdas'=>[
+                sdf
+            ]
+
         ];
 
         $this->setFlow($flow);
 
         $payment = new paymentFlow();
         $this->addAccessory($payment,'/reg/report');
-
-        Flow::setMainFlow($this);
     }
 }

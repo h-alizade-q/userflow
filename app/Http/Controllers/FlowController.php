@@ -3,13 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Flow\Flow;
-use App\Traits\FlowWorks;
-use Illuminate\Http\Request;
 
 class FlowController extends Controller
 {
-    use flowWorks;
-    public function test(request $request)
+    public function test()
     {
         $arguments = [
             'user_id' => 15400,

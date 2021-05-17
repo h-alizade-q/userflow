@@ -72,11 +72,6 @@ abstract class generalFlowClass
 
     public function addAccessory(generalFlowClass $accessory, string $after = null)
     {
-        $prefix = $this->name;
         $this->addStates($accessory->getFlow(), $after);
-
-//        foreach($accessory->getFlow() as $key => $state) {
-//            $this->flow['/' . $prefix . $key] = $state;
-//        }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Operations;
 
-use App\Services\Operation;
+use App\Operations\Operation;
 
 class CheckSicknessStatus extends Operation
 {
